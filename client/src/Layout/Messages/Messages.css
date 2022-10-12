@@ -1,0 +1,12 @@
+#msg-container {
+  width: fit-content;
+  margin: 1rem auto;
+}
+#msg {
+  font-size: medium;
+  color: seagreen;
+}
+#errMsg {
+ font-weight: 500;
+ color: red;
+}

@@ -1,0 +1,27 @@
+.wrapper {
+  overflow-wrap: anywhere;
+}
+
+.loginButton{
+  width: 100%;
+  padding: 15px 25px;
+  border-radius: 5px;
+  border-color: black !important;
+  border-style: solid;
+  color: white;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.google{
+  background-color: rgba(135, 206, 235, 0.4);
+}
+
+.icon{
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+}
