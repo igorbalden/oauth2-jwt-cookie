@@ -4,7 +4,6 @@ import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/authContext';
 import { useSpinner } from '../Layout/Spinner/Spinner';
 import Messages from '../Layout/Messages/Messages';
-import jwt_decode from 'jwt-decode';
 import Google from "../img/google.png";
 
 const srvUrl = process.env.REACT_APP_SERVER;
@@ -17,6 +16,7 @@ async function loginUser(loginData) {
   return await fetch(srvUrl + '/login', {
     method: 'post',
     mode: 'cors',
+    credentials: 'include',
     headers: {
       'Content-type': 'application/json'
     },
@@ -36,23 +36,19 @@ export default function LoginForm() {
   const setSpin = useSpinner(false);
   const [searchParams] = useSearchParams('');
 
-  const makeAuth = useCallback((ltoken)=> {
-    const tokenData = jwt_decode(ltoken);
+  const makeAuth = useCallback((user)=> {
     return dispatch({
       type: "setUser", payload: {
-        user: { 
-          userId: tokenData.id,
-          userEmail: tokenData.email,
-        },
-        token: ltoken
+        user: user,
       }
     })
   }, [dispatch]);
 
   useEffect(()=> {
-    const ltoken = searchParams.get(('token'));
-    if (ltoken) {
-      makeAuth(ltoken);
+    const userId = searchParams.get(('userId'));
+    const userEmail = searchParams.get(('userEmail'));
+    if (userId && userEmail) {
+      makeAuth({id: userId, email: userEmail});
     }
   }, [makeAuth, searchParams]);
   
@@ -65,7 +61,6 @@ export default function LoginForm() {
     })
     .then(res => {
       setSpin(false);
-      // console.log({res})
       if (res.status >= 500) {
         setMsg('');
         setErr_msg(res.statusText);
@@ -76,7 +71,6 @@ export default function LoginForm() {
       }
     })
     .then(resp => {
-      // console.log({resp})
       // Error 4xx. resp.error is my msg added in backend
       if (resp.error) {
         setMsg('');
@@ -84,8 +78,8 @@ export default function LoginForm() {
         return false;
       }
       if (resp) {
-        const ltoken = resp.token;
-        makeAuth(ltoken);
+        const user = resp.user;
+        makeAuth(user);
       }
     })
     .catch(err => {

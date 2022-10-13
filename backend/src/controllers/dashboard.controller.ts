@@ -18,12 +18,9 @@ const pause = (n: number)=> {
 }
 
 export const dashboard = async (req: Request, res: Response) => {
-  console.log('1', new Date().toISOString())
   await pause(1);
-  console.log('2', new Date().toISOString())
-  const token = req.header("authorization")!.split(' ')[1];
+  const token = req.cookies['jwt'];
   const decodedToken = jwt.decode(token, { complete: true }) as JwtPayload;
   const dPayload = decodedToken?.payload;
-  // throw new Error('get a special error');
   return res.json({ msg: `Hey ${dPayload?.email}` });
 };

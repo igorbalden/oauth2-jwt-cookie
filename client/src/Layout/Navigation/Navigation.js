@@ -4,18 +4,22 @@ import { Nav, Navbar } from "react-bootstrap";
 import { useAuth } from "../../context/authContext";
 import { useSpinner } from "../Spinner/Spinner";
 
+const srvUrl = process.env.REACT_APP_SERVER;
+
 export function Navigation(props) {
   const { authObj, dispatch } = useAuth();
   const setSpin = useSpinner(false);
 
-  function logout(e) {
+  async function logout(e) {
     e.preventDefault();
     setSpin(true);
-    setTimeout(() => {
-      dispatch({ type: "cleanUser" });
-      setSpin(false);
-      return true;
-    }, 1000);
+    await fetch(srvUrl + '/logout', {
+      mode: 'cors',
+      credentials: 'include',
+    });
+    setSpin(false);
+    dispatch({ type: "cleanUser" });
+    return true;
   }
 
   return (

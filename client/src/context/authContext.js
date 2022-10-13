@@ -5,7 +5,6 @@ import { createContext, useContext } from 'react';
 export const AuthContext = createContext({
   authObj: {
     user: {userId: null, userEmail: null}, 
-    token: null
   }
 });
 
@@ -19,7 +18,6 @@ function getAuthObj() {
       userId: null,
       userEmail: null
     },
-    token: null
   };
   const luser = JSON.parse(localStorage.getItem('AuthUser'));
   if (luser) {
@@ -28,7 +26,6 @@ function getAuthObj() {
         userId: luser.user.userId,
         userEmail: luser.user.userEmail
       },
-      token: localStorage.getItem('Token')
     };
   }
   return stored;
@@ -40,23 +37,20 @@ export const AuthState = (props)=> {
   function reducer(authObj, action) {
     switch (action.type) {
       case 'cleanUser':
-        localStorage.removeItem('Token');
         localStorage.removeItem('AuthUser');
         const cuser = {
           userId: null,
           userEmail: null
         };
-        return {...authObj, user: cuser, token: null};
+        return {...authObj, user: cuser};
 
       case 'setUser':
-        const token = action.payload.token;
         const user = {
-          userId: action.payload.user.userId,
-          userEmail: action.payload.user.userEmail
+          userId: action.payload.user.id,
+          userEmail: action.payload.user.email
         };
         localStorage.setItem('AuthUser', JSON.stringify({user: user}));
-        localStorage.setItem('Token', token);
-        return {...authObj, user: user, token: token};
+        return {...authObj, user: user};
 
       case 'getAuth':
         authObj = getAuthObj();

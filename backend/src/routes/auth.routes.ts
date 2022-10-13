@@ -1,4 +1,4 @@
-import {Router, Request, Response} from 'express';
+import {Router, Request, Response, CookieOptions} from 'express';
 import User, {IUser} from '../models/user';
 import passport from 'passport';
 import {login, signUp,} from '../controllers/user.controller';
@@ -50,20 +50,23 @@ router.get(
     scope: ["profile", "email"]
   }),
   async (req: Request, res: Response)=> {
-    // console.log('1', new Date().toISOString())
-    // await pause(1);
-    
     const gUser = req.user as Guser;
     const email = gUser?.emails?.[0]?.value;
     const dbUser = await User.findOne({ email: email });
     const token = await createToken(dbUser as IUser);
-    res.redirect(CLIENT_URL + 'auth/login?token=' + token);
+    const cookieOptions: CookieOptions = {
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000,  // 24hours
+    };
+    res.cookie('jwt', token, cookieOptions);
+    res.redirect(CLIENT_URL + 'auth/login?userId=' + dbUser?.id + '&userEmail=' + email);
   }
 );
 
 router.get("/logout", (req, res) => {
-  req.logout();
-  res.redirect(CLIENT_URL);
+  res.clearCookie('jwt');
+  return res.status(200).json('');
 });
 
 export default router;

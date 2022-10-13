@@ -1,13 +1,21 @@
+import { Request } from "express";
 import User from "../models/user";
-import { Strategy as LocalJwtStrategy, ExtractJwt } from "passport-jwt";
+import { Strategy as LocalJwtStrategy } from "passport-jwt";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import config from "../config/config";
 
+const cookieExtractor = function(req: Request) {
+  let token = null;
+  if (req && req.cookies) {
+    token = req.cookies['jwt'];
+  }
+  return token;
+};
 
 const localJwtStrategy = new LocalJwtStrategy(
   {
-    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: config.jwtSecret
+    secretOrKey: config.jwtSecret,
+    jwtFromRequest : (req)=> cookieExtractor(req),
   },
   async (payload, done) => {
     try {

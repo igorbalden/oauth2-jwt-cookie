@@ -4,20 +4,26 @@ import Main from '../../Layout/Main';
 import LoginForm from '../../Forms/LoginForm';
 
 export default function Dashboard() {
-  const { authObj } = useAuth();
+  const { authObj, dispatch } = useAuth();
   const [greet, setGreet] = useState('');
   const srvUrl = process.env.REACT_APP_SERVER;
 
   const srvRes = useCallback(async ()=> {
     const resp = await fetch(srvUrl + '/dashboard', {
       mode: 'cors',
+      credentials: 'include',
       headers: {
         'Content-type': 'application/json',
-        'Authorization': 'Bearer ' + authObj.token
       }
     });
+    if (resp.status >= 500) {
+      return false;
+    }
+    if (resp.status >= 400) {
+      dispatch({ type: "cleanUser" });
+    }
     return resp.json();
-  }, [authObj.token, srvUrl]);
+  }, [srvUrl, dispatch]);
 
   useEffect(()=> {
     let getGreet = async ()=> {
@@ -25,7 +31,7 @@ export default function Dashboard() {
       setGreet(grt.msg)
     }
     getGreet();
-  }, [srvRes]);
+  }, [srvRes, authObj.user.userId]);
 
   const page = (
     (authObj?.user?.userId)

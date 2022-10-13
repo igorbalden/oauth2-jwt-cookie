@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import { CookieOptions, Request, Response } from "express";
+// This IUser import from here, is used in passport.ts middleware
 import User, { IUser } from "../models/user";
 import { createToken } from "../utils/createToken";
 
@@ -9,12 +10,12 @@ export const signUp = async (
   if (!req.body.email || !req.body.password) {
     return res
       .status(400)
-      .json({ msg: "Please. Send your email and password" });
+      .json({ error: "Please. Send your email and password" });
   }
 
   const user = await User.findOne({ email: req.body.email });
   if (user) {
-    return res.status(400).json({ msg: "The User already Exists" });
+    return res.status(400).json({ error: "The User already Exists" });
   }
 
   const newUser = new User(req.body);
@@ -30,20 +31,26 @@ export const login = async (
   if (!req.body.email || !req.body.password) {
     return res
       .status(400)
-      .json({ msg: "Please. Send your email and password" });
+      .json({ error: "Please. Send your email and password" });
   }
 
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
-    return res.status(400).json({ msg: "The User does not exist" });
+    return res.status(400).json({ error: "The User does not exist" });
   }
-  // console.log('user', user)
   const isMatch = await user.comparePassword(req.body.password);
   if (isMatch) {
-    return res.status(200).json({ token: createToken(user) });
+    const token = createToken(user);
+    const cookieOptions: CookieOptions = {
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000,  // 24hours
+    };
+    res.cookie('jwt', token, cookieOptions);
+    return res.status(200).json({user: { id: user.id, email:user.email }});
   }
 
   return res.status(400).json({
-    msg: "The email or password are incorrect"
+    error: "The email or password are incorrect"
   });
 };

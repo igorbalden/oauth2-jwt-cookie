@@ -3,6 +3,7 @@ import express, { NextFunction, Request, Response } from 'express'
 import passport from 'passport'
 import cors from 'cors';
 import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 
 import { AppError, errorHandler } from './utils/error-handling';
 import {localJwtStrategy, googleStrategy} from './middlewares/passport';
@@ -18,6 +19,7 @@ app.set('port', config.port || 5000);
 
 // middlewares
 app.use(morgan('dev'));   // for dev only
+app.use(cookieParser());
 app.use(function(req, res, next) {
   res.setHeader("Access-Control-Allow-Credentials", "true")
   next();
@@ -25,6 +27,7 @@ app.use(function(req, res, next) {
 
 app.use(
   cors({
+    credentials: true,
     origin: true,
     "preflightContinue": true,
   })
