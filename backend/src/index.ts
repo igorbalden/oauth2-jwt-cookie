@@ -1,62 +1,28 @@
-import 'dotenv/config';
-import express, { NextFunction, Request, Response } from 'express'
-import passport from 'passport'
-import cors from 'cors';
-import morgan from 'morgan';
-import cookieParser from 'cookie-parser';
+import {Server} from 'http';
+import {AddressInfo} from 'net';
+import { Application } from 'express';
 
-import { AppError, errorHandler } from './utils/error-handling';
-import {localJwtStrategy, googleStrategy} from './middlewares/passport';
-import authRoutes from './routes/auth.routes';
-import protectedRoutes from './routes/protected.routes';
-import { openConnection } from './server';
-import config from './config/config';
+import { createApp } from './app';
+import './database';
+import log from './utils/pino.small';
+import { errorHandler} from './utils/error-handling';
 
-export const app = express();
-
-// settings
-app.set('port', config.port || 5000);
-
-// middlewares
-app.use(morgan('dev'));   // for dev only
-app.use(cookieParser());
-app.use(function(req, res, next) {
-  res.setHeader("Access-Control-Allow-Credentials", "true")
-  next();
-});
-
-app.use(
-  cors({
-    credentials: true,
-    origin: true,
-    "preflightContinue": true,
-  })
-);
-
-app.use(express.urlencoded({extended: false}));
-app.use(express.json());
-app.use(passport.initialize());
-passport.use(localJwtStrategy);
-passport.use(googleStrategy);
-
-app.use(authRoutes);
-app.use(protectedRoutes);
-app.get('/', (req, res) => {
-  return res.send(`The API is at http://localhost:${app.get('port')}`);
-})
-
+let connection: Server;
+const app: Application = createApp();
 openConnection(app);
 
-// Log any unhandled error.
-app.use(async (
-  err: Error,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  errorHandler.handleError(
-    new AppError('error caught', err.message, 500, false, err)
-  );
-});
-
-export default app;
+export async function openConnection(
+  app: Application
+): Promise<AddressInfo> {
+  return new Promise((resolve, reject) => {
+    try {
+      connection = app.listen(app.get('port'), '0.0.0.0', () => {
+        errorHandler.listenToErrorEvents(connection);
+        log.info(`small - Listening on http://localhost:${app.get('port')}`);
+        resolve(connection.address() as AddressInfo);
+      })
+    } catch(er) {
+      reject(er);
+    }
+  });
+}
