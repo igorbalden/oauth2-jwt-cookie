@@ -1,5 +1,6 @@
 export default {
 
+  environment: process.env.ENVIRONMENT || 'production',
   port: process.env.PORT,
   jwtSecret: process.env.JWT_SECRET,
 

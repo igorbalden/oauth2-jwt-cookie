@@ -1,4 +1,4 @@
-import log from '../pino.small';
+import {logger} from '../logger';
 import * as Http from 'http';
 import * as util from 'util';
 
@@ -17,14 +17,14 @@ const errorHandler = {
     });
 
     process.on('SIGTERM', async () => {
-      log.error(
+      logger.error(
         'SIGTERM received, close the server'
       );
       await terminateHttpServerAndExit(0);
     });
 
     process.on('SIGINT', async () => {
-      log.error(
+      logger.error(
         'SIGINT received, close the server'
       );
       await terminateHttpServerAndExit(0);
@@ -34,7 +34,7 @@ const errorHandler = {
   handleError: (errorToHandle: unknown) => {
     try {
       const appError: AppError = normalizeError(errorToHandle);
-      log.error(
+      logger.error(
         `name: ${appError.name}, message: ${appError.message}, HTTPStatus: ${appError.HTTPStatus}, isTrusted: ${appError.isTrusted}, cause: ${appError.cause}, stack:
         ${appError.stack}`
       );
@@ -98,7 +98,7 @@ class AppError extends Error {
 // like Prometheus, DataDog, CloudWatch, etc
 const metricsExporter = {
   fireMetric: async (name: string, labels: object) => {
-    log.info('Would feed metrics', {
+    logger.info('Would feed metrics', {
       name,
       labels,
     });

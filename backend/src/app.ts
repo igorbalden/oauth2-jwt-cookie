@@ -4,12 +4,12 @@ import passport from 'passport'
 import cors from 'cors';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
-
 import { AppError, errorHandler } from './utils/error-handling';
 import {localJwtStrategy, googleStrategy} from './middlewares/passport';
 import authRoutes from './routes/auth.routes';
 import protectedRoutes from './routes/protected.routes';
 import config from './config/config';
+import './database';
 
 
 export function createApp() {
